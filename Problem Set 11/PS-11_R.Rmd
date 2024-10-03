@@ -1,0 +1,138 @@
+---
+title: "Problem Set 11"
+author: "Lionel Chambon"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(boot)
+```
+
+## Question 1
+
+```{r}
+
+x_1 <- runif(1000, max = 1, min = 0)
+
+mean_x1 <- mean(x_1)
+
+print(mean_x1)
+
+```
+
+## Question 2
+
+```{r}
+
+# Define a function to compute the mean of a bootstrap sample
+compute_mean <- function(data, indices) {
+  mean(data[indices])
+}
+
+# Perform bootstrapping
+bootstrap_results <- boot(x_1, statistic = compute_mean, R = 1000)
+
+bootstrap_se <- sd(bootstrap_results$t)
+
+bootstrap_ci <- quantile(bootstrap_results$t, c(0.025, 0.975))
+
+# Print results
+print(paste("Bootstrap CIs:", bootstrap_ci))
+print(paste("Bootstrap Standard Error:", bootstrap_se))
+
+
+```
+
+## Question 3
+
+```{r}
+
+bootstrap_mean <- function(data, reps) {
+  boot_means <- numeric(reps)
+  for (i in 1:reps) {
+    boot_sample <- sample(data, replace = TRUE)
+    boot_means[i] <- mean(boot_sample)
+  }
+  return(boot_means)
+}
+
+bootstrap_means <- bootstrap_mean(x_1, reps = 1000)
+
+
+hist(bootstrap_means, breaks = 20, main = "Histogram of Bootstrap Means")
+
+
+# Compute bootstrap estimates
+bootstrap_results <- boot(x_1, statistic = function(data, indices) mean(data[indices]), R = 1000)
+
+# Compute bootstrap standard error and confidence intervals
+bootstrap_se <- sd(bootstrap_results$t)
+bootstrap_ci <- quantile(bootstrap_results$t, c(0.025, 0.975))
+print(bootstrap_se)
+print(bootstrap_ci)
+
+```
+```{r}
+
+bootstrap_mean_2 <- function(data, reps) {
+  boot_means <- numeric(reps)
+  for (i in 1:reps) {
+    boot_sample <- sample(data, replace = TRUE)
+    boot_means[i] <- mean(boot_sample)
+  }
+  return(boot_means)
+}
+
+bootstrap_means_2 <- bootstrap_mean(x_1, reps = 10000)
+
+
+hist(bootstrap_means_2, breaks = 50, main = "Histogram of Bootstrap Means")
+
+
+# Compute bootstrap estimates
+bootstrap_results_2 <- boot(x_1, statistic = function(data, indices) mean(data[indices]), R = 10000)
+
+# Compute bootstrap standard error and confidence intervals
+bootstrap_se_2 <- sd(bootstrap_results_2$t)
+bootstrap_ci_2 <- quantile(bootstrap_results_2$t, c(0.025, 0.975))
+print(bootstrap_se_2)
+print(bootstrap_ci_2)
+
+
+```
+
+
+```{r}
+
+bootstrap_mean_3 <- function(data, reps) {
+  boot_means <- numeric(reps)
+  for (i in 1:reps) {
+    boot_sample <- sample(data, replace = TRUE)
+    boot_means[i] <- mean(boot_sample)
+  }
+  return(boot_means)
+}
+
+bootstrap_means_3 <- bootstrap_mean(x_1, reps = 100000)
+
+
+hist(bootstrap_means_3, breaks = 100, main = "Histogram of Bootstrap Means")
+
+
+# Compute bootstrap estimates
+bootstrap_results_3 <- boot(x_1, statistic = function(data, indices) mean(data[indices]), R = 100000)
+
+# Compute bootstrap standard error and confidence intervals
+bootstrap_se_3 <- sd(bootstrap_results_3$t)
+bootstrap_ci_3 <- quantile(bootstrap_results_3$t, c(0.025, 0.975))
+print(bootstrap_se_3)
+print(bootstrap_ci_3)
+
+
+```
+
+By increasing the number of simulations and bootstrap sample sizes, I find that means become more and more normally distributed around the true parameter. The effect on standard errors and confidence intervals is very, very small.
+

@@ -1,0 +1,125 @@
+---
+title: "Problem Set 9"
+author: "Lionel Chambon"
+date: "2024-04-10"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+
+library(haven)
+library(lmtest)
+library(dplyr)
+library(AER)
+```
+
+# Empirical
+
+## Question 6
+
+```{r cars}
+fulton <- read_dta("fulton.dta")
+
+# Refer to the theory pdf for the derivations of the reduced form equations.
+
+qty_reduced2 <- lm(qty ~ stormy, data = fulton)
+
+summary(qty_reduced2)
+
+
+# Proceeding similarly for price:
+
+price_reduced2 <- lm(price ~  stormy, data = fulton)
+
+summary(price_reduced2)
+
+```
+
+```{r}
+
+coef1 <- summary(qty_reduced2)$coefficients[2]
+coef2 <- summary(price_reduced2)$coefficients[2]
+
+coef_interpretation1 <- exp(summary(qty_reduced2)$coefficients[2]) - 1
+print(coef_interpretation1)
+
+coef_interpretation2 <- exp(summary(price_reduced2)$coefficients[2]) - 1
+print(coef_interpretation2)
+
+```
+
+
+The equation for quantity and the coefficient yielded tells us stormy is 
+negatively correlated with supply. Since prices and quantities are expressed
+in log according to an online description of the dataset, exponentiating and 
+subtracting 1 yields an approx. 30.4% decrease in supply relative to when
+there is no storm.
+
+Similarly, is is positively correlated with the price. Exponentiating and 
+subtracting 1 yields an approx. 39,8% increase in price relative to when there
+is no storm.
+
+## Question 7
+
+```{r}
+
+ratio1 <- coef1/coef2
+print(ratio1)
+
+```
+
+We are estimating $\alpha_2$ (isolating $z$ in the reduced form equations and then dividing the coefficients will leave $\alpha_2$). We are thus looking at the effect of prices on demand. Since prices and quantities are expressed in logs, this shows us that a 1% price increase leads to a demand decrease of about 1,08%.
+
+## Question 8
+
+```{r}
+
+# Since we are told to use the equivalent of ivreg, I decided to use the R
+# equivalent as opposed to both 2SLS regressions like last week.
+
+ivmodel <- ivreg(qty ~ price | stormy, data = fulton)
+
+summary(ivmodel)
+
+ivmodel2 <- ivreg(price ~ qty | stormy, data = fulton)
+
+summary(ivmodel2)
+
+coef3 <- exp(summary(ivmodel)$coefficients[2]) - 1
+print(coef3)
+
+coef4 <- exp(summary(ivmodel2)$coefficients[2]) - 1
+print(coef4)
+
+ratio2 <- coef3/coef4
+print(ratio2)
+
+```
+
+The coeffient is identical to the previous result.
+
+## Question 9
+
+```{r}
+
+# Now repeating the exercise with the coefficient for friday:
+
+qty_reduced_f <- lm(qty ~ + stormy + friday, data = fulton)
+summary(qty_reduced_f)
+
+
+# Proceeding similarly for price:
+
+price_reduced_f <- (lm(price ~ stormy + friday, data = fulton))
+summary(price_reduced_f)
+
+```
+
+According to this output, the effect of friday is not significant. This could be a reason why we excluded it. Since we want to estimate the coefficient for price, friday may not be a good instrument since it does not produce any meaningul exogenous variation in price that we could use as instruments, unlike a storm.
+
+
+
+
+
+

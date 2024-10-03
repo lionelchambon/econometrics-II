@@ -1,0 +1,136 @@
+---
+title: "Problem Set 6"
+author: "Lionel Chambon"
+date: "2024-03-17"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(warn = -1)
+
+library(ggplot2)
+library(kableExtra)
+library(tidyverse)
+library(dplyr)
+library(lmtest)
+library(skedastic)
+library(sandwich)
+
+```
+
+## Problem Set 6
+
+### Questions 1 & 2
+
+```{r}
+
+# Creating the required variables:
+
+n <- 10000
+x_1 <- rnorm(n, mean = 2, sd= sqrt(3))
+aux <- rnorm(n, mean = 0, sd = 1)
+
+u <- 2*x_1*aux
+y <- 2 + 3*x_1 + u
+df1 <- data_frame(x_1, aux, u, y)
+
+```
+
+```{r}
+
+# Creating the regression:
+
+reg_q1 <- lm(y ~ x_1)
+residuals <- resid(reg_q1)
+
+df2 <- data_frame(x_1, aux, u, y, residuals)
+
+df2 %>%
+  ggplot() + 
+  aes(x = x_1, y = residuals) +
+  geom_point(color = "darkblue") +
+  labs(x = "Value of x1", y = "Residuals")
+
+```
+
+We observe that the value of the residual rises as the absolute value of $x_1$ increases.
+
+### Question 3
+
+I start by conducting the test directly, that is, question d):
+
+```{r}
+
+white(reg_q1)
+
+```
+Since our p-value is well below our commonly used level of significance at $\alpha = 0.05$, we reject the null that there
+is homoskedasticity.
+
+Proceeding to question a):
+
+```{r}
+
+# I first create a new dataframe that includes predicted values and residuals:
+
+reg_q1 <- lm(y ~ x_1)
+df3 <- data_frame(x_1, aux, u, y, predict(reg_q1), residuals(reg_q1))
+
+df3 %>%
+  ggplot() + 
+  aes(x = x_1, y = y) +
+  geom_point(color = "red") +
+  geom_smooth(method = "lm", col = "blue") +
+  labs(x = "Value of x1", y = "Value of Y")
+
+```
+
+Moving on to question b):
+
+```{r}
+
+# Estimating the model:
+
+model_q3 <- lm((residuals(reg_q1)^2) ~ predict(reg_q1) + ((predict(reg_q1))^2), data = df3)
+
+summary(model_q3)
+r_squared <- summary(model_q3)$r.squared
+
+```
+
+And finally:
+
+```{r}
+
+# Obtaining the critical value:
+
+test_threshold <- qchisq(0.95, df = 2)
+print(test_threshold)
+
+# We obtain a critical value of ~ 5.99.
+
+manual_tstat <- n*(r_squared)
+print(manual_tstat)
+
+```
+
+The $nR^2$ is well above the critical value we found earlier, we can thus safely reject the null of homoskedasticity. This result is identical to the test conducted in d). This was to be expected: the White test, by definition, creates a test statistic by multiplying $n$ times the $R^2$ of the auxiliary regression model, which here is $regq3$. 
+
+### Question 4 (optional)
+
+```{r}
+
+# For somparison, let's recall the original model:
+
+summary(reg_q1)
+
+# Now for the heteroskedasticity-adjusted regression:
+
+reg_q1_robust <- lm(y ~ x_1)
+robust_se <- coeftest(reg_q1, vcov. = vcovHC(reg_q1_robust))
+summary(reg_q1_robust)
+
+```
+
+We observe that the standard errors do not change.

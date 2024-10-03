@@ -1,0 +1,169 @@
+---
+title: "Problem Set 8"
+author: "Lionel Chambon"
+date: "2024-04-01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(data.table)
+library(lmtest)
+library(haven)
+library(skedastic)
+library(ivreg)
+library(modelsummary)
+library(tinytable)
+library(AER)
+```
+
+### Question 1
+
+```{r}
+data <- read_dta("ee2002ext.dta")
+```
+
+### Question 2
+
+```{r}
+p0050 = quantile(data$salfr, 0.005,  na.rm = TRUE)
+p9950 = quantile(data$salfr, 0.995, na.rm = TRUE)
+data_trim <- data %>%
+  filter(salfr > p0050 & salfr < p9950)
+
+data_trim %>%
+  ggplot(mapping = aes(x = salfr)) +
+  geom_histogram(binwidth = 500, fill = 'lightblue3', color = 'lightblue4') +
+   theme(panel.background = element_rect(fill ="white"),
+          axis.line = element_line(size = 1, 
+                                   colour ="gray",
+                                   linetype=1)) +
+  labs(x = "Income", y = "Count")
+```
+
+### Question 3
+
+```{r}
+data_trim <- data_trim %>% # "Trim" refers to the removal of the percentiles in Q3.
+  mutate(agesq = agd^2)
+```
+
+### Question 4
+
+```{r}
+data_filtered <- data_trim %>% # "Filtered" refers to the conditions of Q4.
+  filter(adfe != 0 & adfe != 99, s == 2)
+```
+
+### Question 5
+
+```{r}
+data_filtered <- data_filtered %>%
+  mutate(lnw = log((((12*salfr)/52)/hh)),
+         lnh = log(hh))
+```
+
+Missing values are generated because by the log transformation, very low values of hourly wages approach -$\infty$. Does R deal with this problem the same way as Stata?
+
+### Question 6
+
+```{r}
+data_filtered <- data_filtered %>%
+  filter(!is.na(lnw), !is.nan(lnw), !is.infinite(lnw), !is.na(lnh), !is.nan(lnh), !is.infinite(lnh))
+
+# Here I attempt to deal with some infinite values from our log hours variable.
+
+model1 <- lm(lnw ~ agd + agesq +  adfe + lnh, data = data_filtered)
+summary(model1)
+```
+
+Age, education and log hours worked are all positively correlated with log wage. 
+The age squared variable is negatively correlated.
+
+We could observe endogeneity since we created the log wages variable using the variable for log hours. So log hours is not entirely exogenous to log wages.
+
+### Question 7
+
+```{r}
+model2 <- ivreg(lnw ~ agd + agesq + adfe + lnh | 
+                       enf3 + enf6 +
+                       enf18 + tymen90r, 
+                       data = data_filtered)
+summary(model2, diagnostics = TRUE)
+```
+
+### Question 8
+
+First, we regress the endogenous variable we want to find instruments for on the instruments themselves:
+
+```{r}
+firststage <- lm(lnh ~ agd + agesq + adfe + enf3 + 
+    enf6 + enf18 + tymen90r, 
+    data = data_filtered)
+
+firststage_fitted <- fitted(firststage)
+```
+
+Next, we use the fitted values from the first stage-regression in a second one:
+
+```{r}
+secondstage <- lm(lnw ~ agd + agesq + adfe + firststage_fitted, data = data_filtered)
+
+summary(secondstage)
+```
+
+### Question 9
+
+```{r}
+firststage <- lm(lnh ~ agd + agesq + adfe + enf3 + 
+    enf6 + enf18 + tymen90r, 
+    data = data_filtered)
+
+firststage_resid <- residuals(firststage)
+
+secondstage_2 <- lm(lnw ~ agd + agesq + adfe + lnh + firststage_resid, data = data_filtered)
+
+summary(secondstage_2)
+```
+
+### Question 10
+
+```{r}
+beta_ols <- model2$coefficients[5]
+beta_2sls <- secondstage_2$coefficients[5]
+
+test_stat = sqrt(23532)*(beta_ols - beta_2sls)
+print(test_stat)
+
+```
+
+We can thus conclude that the variable is endogenous, since this value is not very close to zero.
+
+### Question 11
+
+Performing the Sargan test:
+
+```{r}
+secondstage_2_resid <- residuals(secondstage_2)
+
+sargan_test <- lm(secondstage_2_resid ~ as.factor(enf3) +
+                    as.factor(enf6) + as.factor(enf18) +
+                    as.factor(tymen90r), data = data_filtered)
+
+summary(sargan_test)
+
+
+N = 23520
+R2 = summary(sargan_test)$r.squared
+
+sargan.stat = (N*R2)/(1-R2) 
+sargan.stat > qchisq(0.95, 3)
+
+```
+
+This result tells us that at least one of our instruments is not valid. The manually computed Sargan statistic is above the critical value, so we can  reject the null that all instruments are valid.
+
+In question 7, why is the Sargan test NA in my model summary?

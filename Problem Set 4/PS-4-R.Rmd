@@ -1,0 +1,473 @@
+---
+title: "Problem Set 4"
+author: "Lionel Chambon"
+date: "2024-03-01"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Problem Set 4
+
+### Lionel Chambon
+
+```{r load-packages, include=FALSE}
+library(ggplot2)
+library(RColorBrewer)
+library(plotly)
+library(reshape2)
+library(kableExtra)
+library(tidyverse)
+library(stringr)
+library(data.table)
+library(car)
+```
+
+### Question 1
+
+```{r}
+x_1 <- runif(1000, min = 0, max = 1)
+
+x_1_plot <- as.data.frame(x_1) %>% 
+  ggplot(aes(x = x_1)) +
+  geom_histogram(binwidth=0.01, fill = '#34495E') +
+  theme(panel.background = 
+            element_rect(fill ="white"),
+        axis.title.y = element_text(color = '#17202A'),
+        axis.title.x = element_text(color = '#17202A')) +
+
+  xlab("Distribution of x_1") +
+  ylab("Count") 
+  
+ggplotly(x_1_plot) 
+
+### Why do I have to use plotly here? Without it, R generates the plot but does
+### not display it?
+ 
+```
+
+```{r}
+u_plus_1 <- rchisq(1000, df =1)
+
+u_plus_1_plot <- as.data.frame(u_plus_1) %>%
+  ggplot(aes( x = u_plus_1)) +
+  geom_histogram(binwidth = 0.1, fill = '#34495E') +
+  theme(panel.background = 
+          element_rect(fill = "white"),
+        axis.title.y = element_text(color = '#17202A'),
+        axis.title.x = element_text(color = '#17202A')) +
+  
+  xlab("Distribution of u+1") +
+  ylab("Count")
+
+ggplotly(u_plus_1_plot)
+```
+
+### Question 2
+
+```{r}
+  # a)
+  f2_a <- function(N = 5)
+  {
+    x <- rchisq(df = 1, N) - 1 
+    return(c(mean(x), sd(x))) # returns a vector containing the mean and the standard deviation of the generated values.
+  }
+  
+  # b) 
+  f2_b <- function( n=10000,N = 5 ){ 
+    set.seed(1)
+    MEAN <- c() # To create a MEAN vector
+    SD <- c() # To create a SD vector
+    for (i in 1:n) 
+    {
+      df <- f2_a(N) 
+      MEAN[i]  <- df[1] # It attributes the mean to the vector 'MEAN'
+      SD[i] <- df[2] # It attributes the standard deviation to the vector 'SD'
+    }
+    return (data.frame(MEAN,SD))
+    # We get the desired dataset in a dataframe format. 
+  }
+  simulated_chi <- f2_b()
+  
+  # c) 
+
+simulation_means_plot <- as.data.frame(simulated_chi[, 1]) %>%
+  ggplot(aes(x = simulated_chi[, 1])) +
+  geom_histogram(binwidth=0.3, fill = '#34495E') +
+  theme(panel.background = 
+            element_rect(fill ="white"),
+        axis.title.y = element_text(color = '#17202A'),
+        axis.title.x = element_text(color = '#17202A')) +
+
+  xlab("Distribution of Means") +
+  ylab("Count") 
+  
+ggplotly(simulation_means_plot) 
+  
+```
+
+### Question 3
+
+```{r}
+
+# N = 10 : 
+  q3a <- f2_b(N=10)
+  summary(q3a[,1])
+# N = 100 : 
+  q3b <- f2_b(N=100)
+  summary(q3b[,1])
+# N = 1000 : 
+  q3c <- f2_b(N=1000)
+  summary(q3c[,1])
+
+```
+We observe that all summary statistics tend to  the greater the N. 
+
+### Question 4
+
+```{r}
+
+sd_n_10 <- sd(simulated_chi[, 1])
+print(sd_n_10)
+
+multi_4a <- sd_n_10*(sqrt(10)/sqrt(100))
+print(multi_4a)
+
+multi_4b <- sd_n_10*(sqrt(10)/sqrt(1000))
+print(multi_4b)
+
+multi_4c <- sd_n_10*(sqrt(10)/sqrt(3500000))
+print(multi_4c)
+
+```
+
+The second multiplication divides the standard deviation by 10. Through guessing I obtain a sample size of N approx. = 3 500 000.
+
+### Question 5
+
+```{r}
+
+# N = 10 : 
+  q4a <- f2_b(N=10)
+  hist(q3a[,1])
+# N = 100 : 
+  q4b <- f2_b(N=100)
+  hist(q3b[,1])
+# N = 1000 : 
+  q4c <- f2_b(N=1000)
+  hist(q3c[,1])
+
+```
+We observe the mean becomes approximately more and more normally distributed.
+
+```{r}
+# Playing around with ggplot2 for my own amusement:
+
+#a)
+
+q4a_plot <- as.data.frame(q4a) %>%
+  ggplot(aes(x = MEAN)) +
+  geom_histogram(binwidth=0.05, fill = '#34495E') +
+  theme(panel.background = 
+            element_rect(fill ="white"),
+        axis.title.y = element_text(color = '#17202A'),
+        axis.title.x = element_text(color = '#17202A')) +
+
+  xlab("Distribution of Means") +
+  ylab("Count") 
+  
+ggplotly(q4a_plot) 
+
+#b)
+
+q4b_plot <- as.data.frame(q4b) %>%
+  ggplot(aes(x = MEAN)) +
+  geom_histogram(binwidth=0.05, fill = '#34495E') +
+  theme(panel.background = 
+            element_rect(fill ="white"),
+        axis.title.y = element_text(color = '#17202A'),
+        axis.title.x = element_text(color = '#17202A')) +
+
+  xlab("Distribution of Means") +
+  ylab("Count") 
+  
+ggplotly(q4b_plot) 
+
+#c)
+
+q4c_plot <- as.data.frame(q4c) %>%
+  ggplot(aes(x = MEAN)) +
+  geom_histogram(binwidth=0.01, fill = '#34495E') +
+  theme(panel.background = 
+            element_rect(fill ="white"),
+        axis.title.y = element_text(color = '#17202A'),
+        axis.title.x = element_text(color = '#17202A')) +
+
+  xlab("Distribution of Means") +
+  ylab("Count") 
+  
+ggplotly(q4c_plot) 
+
+```
+
+How could I create an alternative chart that overlapps the three distributions to show that they become more and more Gaussian? For example, how could I obtain a graph with three bell-shaped curves for each of the distributions?
+
+### Question 6
+
+```{r}
+
+  # a)
+  
+  rm(list = ls())
+  N = 10
+  
+  # b)
+  
+  x1 <- runif(N, min = 0, max = 1)
+  x2 <- rbinom(N, 1, 0.3)
+  u <- rchisq(N, df = 1) - 1
+  y <- 1 + 2 * x1 + 10 * x2 + u
+  
+  # c) 
+  regression_q6 <- lm(y ~ x1 + x2) 
+  
+  # d)
+  
+  regression_q6$coefficients 
+  sd <- c(sd(x1),sd(x2),sd(u)) 
+  
+# Creating a function to generate data:
+  
+  function1_q6 <- function(N = 10){
+    x1 <- runif(N, min = 0, max = 1)
+    x2 <- rbinom(N, 1, 0.3)
+    u <- rchisq(N, df = 1) - 1
+    y <- 1 + 2*x1 + 10*x2 + u
+    regression_q6 <- lm(y ~ x1 + x2) 
+    return(c(regression_q6$coefficients, "sd(x1)"=sd(x1), "sd(x2)"=sd(x2), "sd(u)"=sd(u)))
+  }
+  
+# Second, a function to simulate this several times and collect the data.
+  function2_q6 <- function(n=10000, N=10){
+    set.seed(2)
+    df <- data.frame(matrix(0, ncol = 6, nrow = 0))
+    names(df) <- c("Intercept",
+                   "First coef",
+                   "Second coef",
+                   "Sd(x1)",
+                   "Sd(x2)",
+                   "Sd(u)")
+    for (i in 1:n){
+      d <- function1_q6(N)
+      for (j in 1:6){
+        df[i,j] <- d[j]
+      }
+    }
+    return(df)
+  }
+  
+  df <- function2_q6()
+```
+
+### Question 7
+
+```{r}
+
+#a)
+
+  # With N=10:
+  df_1 <- function2_q6(N=10) 
+  summary(df_1[, 1]) # To summarize the intercept
+  summary(df_1[,2]) # To summarize the first coefficient
+  summary(df_1[,3]) # To summarize the second coefficient
+  
+  hist(df_1[, 1])
+  hist(df_1[,2]) 
+  hist(df_1[,3]) 
+
+```
+
+```{r}
+
+#b)
+
+  # With N=1000:
+  df_2 <- function2_q6(N=1000) 
+  summary(df_2[, 1]) # To summarize the intercept
+  summary(df_2[,2]) # To summarize the first coefficient
+  summary(df_2[,3]) # To summarize the second coefficient
+  
+  hist(df_2[, 1])
+  hist(df_2[,2]) 
+  hist(df_2[,3]) 
+
+```
+
+```{r}
+
+  # With N=1000:
+  df_3 <- function2_q6(N=10000) 
+  summary(df_3[, 1]) # To summarize the intercept
+  summary(df_3[,2]) # To summarize the first coefficient
+  summary(df_3[,3]) # To summarize the second coefficient
+  
+  hist(df_3[, 1])
+  hist(df_3[,2]) 
+  hist(df_3[,3]) 
+
+```
+
+We can see that as we increase sample size, the estimates converge around the values we predetermined 2 and 10. To verify consistency of standard errors, we could perhaps plot them and increase the sample size again and again to see whether they converge to a certain value.
+
+### Question 8
+
+```{r}
+
+  # a)
+  
+  rm(list = ls())
+  N = 100
+  
+  # b)
+  
+  x1 <- runif(N, min = 0, max = 1)
+  x2 <- rbinom(N, 1, 0.3)
+  u <- rchisq(N, df = 1) - 1
+  y <- 1 + 2 * x1 + 10 * x2 + u
+  
+  # c) 
+  
+  regression_q8 <- lm(y ~ x1 + x2) 
+  
+ # d) 
+
+    function1_q8 <- function(N = 1000){
+      
+    rm(list =ls())  
+    x1 <- runif(N, min = 0, max = 1)
+    x2 <- rbinom(N, 1, 0.3)
+    u <- rchisq(N, df = 1) - 1
+    y <- 1 + 2*x1 + 10*x2 + u
+    regression_q8 <- lm(y ~ x1 + x2)
+    test_int <- linearHypothesis(regression_q8, "(Intercept) =1")
+    test_b <- linearHypothesis(regression_q8, "x1=2")
+    F_int <- test_int$F[2]
+    F_b <- test_b$F[2]
+    return(c(regression_q8$coefficients, "sd(x1)"=sd(x1), "sd(x2)"=sd(x2), "sd(u)"=sd(u), F_int, F_b))
+    
+  }
+  
+  # Second, a function to simulate this several times and collect the data.
+  function2_q8 <- function(n=10000, N=100){
+    df_q8 <- data.frame(matrix(0, ncol = 8, nrow = 0))
+    names(df_q8) <- c("Intercept",
+                   "First coef",
+                   "Second coef",
+                   "Sd(x1)",
+                   "Sd(x2)",
+                   "Sd(u)",
+                   "F_int",
+                   "F_b")
+    for (i in 1:n){
+      d <- function1_q8(N)
+      for (j in 1:8){
+        df_q8[i,j] <- d[j]
+      }
+    }
+    
+  
+    return(df_q8)
+  }
+  
+  df_q8 <- function2_q8()
+  
+  summary(df_q8)
+
+```
+
+```{r}
+
+#8.1)
+
+  # With N=100:
+  df_q8_1 <- function2_q8(N=100) 
+  summary(df_q8[, 1]) # To summarize the intercept
+  summary(df_q8[,2]) # To summarize the first coefficient
+  summary(df_q8[,3]) # To summarize the second coefficient
+  summary(df_q8[, 7]) # To summarize the F-stat
+  
+  hist(df_q8[, 1])
+  hist(df_q8[,2]) 
+  hist(df_q8[,3]) 
+  hist(df_q8[, 7], breaks = "Sturges")
+
+```
+
+
+```{r}
+
+#8.2)
+
+  # With N=1000:
+  df_q8_2 <- function2_q8(N=1000) 
+  summary(df_q8[, 1]) # To summarize the intercept
+  summary(df_q8[,2]) # To summarize the first coefficient
+  summary(df_q8[,3]) # To summarize the second coefficient
+  summary(df_q8[, 7])
+  
+  hist(df_q8[, 1])
+  hist(df_q8[,2]) 
+  hist(df_q8[,3]) 
+  hist(df_q8[, 7], breaks = "Sturges") #Why is Sturges not working?
+
+```
+
+### Question 9
+
+```{r}
+
+# a)
+
+# For N = 100
+
+critical_value1 = qf(p=0.01, df1=1, df2=97, lower.tail = FALSE)
+
+critical_value2 = qf(p=0.05, df1=1, df2=97, lower.tail = FALSE)
+
+# For N = 1000
+
+critical_value3 = qf(p=0.01, df1=1, df2=997, lower.tail = FALSE)
+
+critical_value4 = qf(p=0.05, df1=1, df2=997, lower.tail = FALSE)
+
+critical_values <- as.table(rbind(c(critical_value1, critical_value2), c(critical_value3, critical_value4)))
+dimnames(critical_values) <- list(c("N=100", "N=1000"),
+                       c("1%", "5%"))
+
+critical_values
+
+# b)
+
+sum(df_q8_1$F_int > critical_value1)
+sum(df_q8_1$F_b > critical_value1)
+
+sum(df_q8_1$F_int > critical_value2)
+sum(df_q8_1$Fb > critical_value2)
+
+sum(df_q8_2$F_int > critical_value3)
+sum(df_q8_2$F_b > critical_value3)
+
+sum(df_q8_2$F_int > critical_value4)
+sum(df_q8_2$F_b > critical_value4)
+
+```
+
+We observe that the number of F-statistics that tell us to reject the null decreases as N rises and is roughly around 1% and 5%. The ratio is sometimes slightly above the level of significance we set.
+
+If errors had been normally distributed, we would reject the null exactly alpha percent of the time, so we would have observed 100 and 500 rejections precisely, which is not the case - this is because of the error term.
+

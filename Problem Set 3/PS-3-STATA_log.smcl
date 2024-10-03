@@ -1,0 +1,479 @@
+{smcl}
+{com}{sf}{ul off}{txt}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}/Users/lionelchambon/Desktop/LIONEL/LIONEL_edu/MASTER/M1/Cours/Econometrics_II/Problem Sets/Problem Set 3/PS-3-STATA_log.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res}28 Feb 2024, 14:21:23
+
+{com}. do "/Users/lionelchambon/Desktop/LIONEL/LIONEL_edu/MASTER/M1/Cours/Econometrics_II/Code/PS-3/PS-3-STATA.do"
+{txt}
+{com}. // Question 1
+. 
+. use "ee2002ext.dta"
+{txt}
+{com}. 
+. // Question 2
+. 
+. generate log_wages = log(salfr)
+{txt}(89,204 missing values generated)
+
+{com}. _pctile log_wages, p(.5,99.5)
+{txt}
+{com}. return list
+
+{txt}scalars:
+                 r(r1) =  {res}6.396929740905762
+                 {txt}r(r2) =  {res}10.59663486480713
+{txt}
+{com}. 
+. global p0050=r(r1)
+{txt}
+{com}. global p9950=r(r2)
+{txt}
+{com}. 
+. replace log_wages = . if log_wages < $p0050
+{txt}(266 real changes made, 266 to missing)
+
+{com}. replace log_wages = . if log_wages > $p9950
+{txt}(241 real changes made, 241 to missing)
+
+{com}. drop if ddipl1==7
+{txt}(17,618 observations deleted)
+
+{com}. 
+. //Question 3
+. 
+. gen age_sq = agd^2
+{txt}
+{com}. 
+. // Question 4
+. 
+. regress log_wages s agd age_sq ddipl1
+
+{txt}      Source {c |}       SS           df       MS      Number of obs   ={res}    52,599
+{txt}{hline 13}{c +}{hline 34}   F(4, 52594)     = {res}  6397.96
+{txt}       Model {c |} {res}  4901.1115         4  1225.27787   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res} 10072.3193    52,594  .191510806   {txt}R-squared       ={res}    0.3273
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.3273
+{txt}       Total {c |} {res} 14973.4308    52,598   .28467681   {txt}Root MSE        =   {res} .43762
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}   log_wages{col 14}{c |} Coefficient{col 26}  Std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 11}s {c |}{col 14}{res}{space 2} -.352907{col 26}{space 2} .0038325{col 37}{space 1}  -92.08{col 46}{space 3}0.000{col 54}{space 4}-.3604187{col 67}{space 3}-.3453952
+{txt}{space 9}agd {c |}{col 14}{res}{space 2} .0518277{col 26}{space 2} .0013716{col 37}{space 1}   37.79{col 46}{space 3}0.000{col 54}{space 4} .0491393{col 67}{space 3} .0545161
+{txt}{space 6}age_sq {c |}{col 14}{res}{space 2}-.0004834{col 26}{space 2} .0000169{col 37}{space 1}  -28.54{col 46}{space 3}0.000{col 54}{space 4}-.0005166{col 67}{space 3}-.0004502
+{txt}{space 6}ddipl1 {c |}{col 14}{res}{space 2} .1514887{col 26}{space 2} .0012035{col 37}{space 1}  125.87{col 46}{space 3}0.000{col 54}{space 4} .1491298{col 67}{space 3} .1538475
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 7.755334{col 26}{space 2} .0273793{col 37}{space 1}  283.26{col 46}{space 3}0.000{col 54}{space 4}  7.70167{col 67}{space 3} 7.808997
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. 
+. 
+. // Question 5
+. 
+. // We obtain the following output:
+. 
+. //      Source |       SS           df       MS      Number of obs   =    52,599
+. //-------------+----------------------------------   F(4, 52594)     =   6397.96
+. //       Model |   4901.1115         4  1225.27787   Prob > F        =    0.0000
+. //    Residual |  10072.3193    52,594  .191510806   R-squared       =    0.3273
+. //-------------+----------------------------------   Adj R-squared   =    0.3273
+. //       Total |  14973.4308    52,598   .28467681   Root MSE        =    .43762
+. 
+. //------------------------------------------------------------------------------
+. //   log_wages | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+. //-------------+----------------------------------------------------------------
+. //           s |   -.352907   .0038325   -92.08   0.000    -.3604187   -.3453952
+. //         agd |   .0518277   .0013716    37.79   0.000     .0491393    .0545161
+. //      age_sq |  -.0004834   .0000169   -28.54   0.000    -.0005166   -.0004502
+. //      ddipl1 |   .1514887   .0012035   125.87   0.000     .1491298    .1538475
+. //       _cons |   7.755334   .0273793   283.26   0.000      7.70167    7.808997
+. 
+. // All coefficients are more than twice the size of their std. errors, so all
+. // appear to be statistically significant on first glance. 
+. 
+. // Since we are dealing with a log-variable, we interpret the coefficients as 
+. // percentage points changes.
+. 
+. // The coefficient for gender indicates that women's incomes are lower by approximately 35
+. // percentage ponts relative to men. The coefficient for age tells us that an increase
+. // in age by one year increases income by about 5%. An increase in the level of 
+. // schooling leads to a 15% income increase.
+. 
+. // There is a negative relationship between log wages and age squared.
+. 
+. // Schooling and gender seem to have a strong impact on log wages relative to
+. // the other variables.
+. 
+. // Question 6
+. 
+. ereturn list
+
+{txt}scalars:
+                  e(N) =  {res}52599
+               {txt}e(df_m) =  {res}4
+               {txt}e(df_r) =  {res}52594
+                  {txt}e(F) =  {res}6397.956844322262
+                 {txt}e(r2) =  {res}.3273205417881503
+               {txt}e(rmse) =  {res}.4376194765809541
+                {txt}e(mss) =  {res}4901.111495279678
+                {txt}e(rss) =  {res}10072.31934564748
+               {txt}e(r2_a) =  {res}.3272693816209667
+                 {txt}e(ll) =  {res}-31164.14378282828
+               {txt}e(ll_0) =  {res}-41591.53656425359
+               {txt}e(rank) =  {res}5
+
+{txt}macros:
+            e(cmdline) : "{res}regress log_wages s agd age_sq ddipl1{txt}"
+              e(title) : "{res}Linear regression{txt}"
+          e(marginsok) : "{res}XB default{txt}"
+                e(vce) : "{res}ols{txt}"
+             e(depvar) : "{res}log_wages{txt}"
+                e(cmd) : "{res}regress{txt}"
+         e(properties) : "{res}b V{txt}"
+            e(predict) : "{res}regres_p{txt}"
+              e(model) : "{res}ols{txt}"
+          e(estat_cmd) : "{res}regress_estat{txt}"
+
+matrices:
+                  e(b) : {res} 1 x 5
+                  {txt}e(V) : {res} 5 x 5
+               {txt}e(beta) : {res} 1 x 4
+
+{txt}functions:
+             e(sample)   
+
+{com}. 
+. global N = e(N)          
+{txt}
+{com}. global K = e(df_m)          
+{txt}
+{com}. global K_plus_1 = $K + 1 
+{txt}
+{com}. global SSR = e(rss) 
+{txt}
+{com}. 
+. display $N
+{res}52599
+{txt}
+{com}. display $K
+{res}4
+{txt}
+{com}. display $K_plus_1
+{res}5
+{txt}
+{com}. display $SSR
+{res}10072.319
+{txt}
+{com}. 
+. // Question 7
+. 
+. test ddipl1
+
+{p 0 7}{space 1}{text:( 1)}{space 1} {res}ddipl1 = 0{p_end}
+
+{txt}       F(  1, 52594) ={res}15843.80
+{txt}{col 13}Prob > F ={res}    0.0000
+{txt}
+{com}. 
+. // ( 1)  ddipl1 = 0
+. 
+. //       F(  1, 52594) =15843.80
+. //            Prob > F =    0.0000
+. 
+. // Question 8
+. 
+. regress log_wages s agd age_sq ibn.ddipl1
+{txt}{p 0 6 2}note: {bf:6.ddipl1} omitted because of collinearity.{p_end}
+
+      Source {c |}       SS           df       MS      Number of obs   ={res}    52,599
+{txt}{hline 13}{c +}{hline 34}   F(8, 52590)     = {res}  3356.67
+{txt}       Model {c |} {res} 5061.30288         8   632.66286   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res} 9912.12796    52,590   .18847933   {txt}R-squared       ={res}    0.3380
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.3379
+{txt}       Total {c |} {res} 14973.4308    52,598   .28467681   {txt}Root MSE        =   {res} .43414
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}   log_wages{col 14}{c |} Coefficient{col 26}  Std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 11}s {c |}{col 14}{res}{space 2} -.359064{col 26}{space 2} .0038268{col 37}{space 1}  -93.83{col 46}{space 3}0.000{col 54}{space 4}-.3665647{col 67}{space 3}-.3515633
+{txt}{space 9}agd {c |}{col 14}{res}{space 2} .0521668{col 26}{space 2} .0013642{col 37}{space 1}   38.24{col 46}{space 3}0.000{col 54}{space 4}  .049493{col 67}{space 3} .0548406
+{txt}{space 6}age_sq {c |}{col 14}{res}{space 2}-.0004929{col 26}{space 2} .0000168{col 37}{space 1}  -29.26{col 46}{space 3}0.000{col 54}{space 4}-.0005259{col 67}{space 3}-.0004599
+{txt}{space 12} {c |}
+{space 6}ddipl1 {c |}
+{space 10}1  {c |}{col 14}{res}{space 2} -.803534{col 26}{space 2} .0069229{col 37}{space 1} -116.07{col 46}{space 3}0.000{col 54}{space 4} -.817103{col 67}{space 3} -.789965
+{txt}{space 10}2  {c |}{col 14}{res}{space 2}-.5547167{col 26}{space 2} .0089135{col 37}{space 1}  -62.23{col 46}{space 3}0.000{col 54}{space 4}-.5721873{col 67}{space 3}-.5372461
+{txt}{space 10}3  {c |}{col 14}{res}{space 2}-.5825761{col 26}{space 2} .0065391{col 37}{space 1}  -89.09{col 46}{space 3}0.000{col 54}{space 4}-.5953928{col 67}{space 3}-.5697593
+{txt}{space 10}4  {c |}{col 14}{res}{space 2}-.4155193{col 26}{space 2} .0074172{col 37}{space 1}  -56.02{col 46}{space 3}0.000{col 54}{space 4}-.4300572{col 67}{space 3}-.4009815
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}-.2223124{col 26}{space 2} .0075681{col 37}{space 1}  -29.37{col 46}{space 3}0.000{col 54}{space 4} -.237146{col 67}{space 3}-.2074789
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 8.747749{col 26}{space 2} .0273879{col 37}{space 1}  319.40{col 46}{space 3}0.000{col 54}{space 4} 8.694068{col 67}{space 3} 8.801429
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. 
+. //      Source |       SS           df       MS      Number of obs   =    52,599
+. //-------------+----------------------------------   F(8, 52590)     =   3356.67
+. //       Model |  5061.30288         8   632.66286   Prob > F        =    0.0000
+. //    Residual |  9912.12796    52,590   .18847933   R-squared       =    0.3380
+. //-------------+----------------------------------   Adj R-squared   =    0.3379
+. //       Total |  14973.4308    52,598   .28467681   Root MSE        =    .43414
+. //
+. //------------------------------------------------------------------------------
+. //   log_wages | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+. //-------------+----------------------------------------------------------------
+. //           s |   -.359064   .0038268   -93.83   0.000    -.3665647   -.3515633
+. //         agd |   .0521668   .0013642    38.24   0.000      .049493    .0548406
+. //      age_sq |  -.0004929   .0000168   -29.26   0.000    -.0005259   -.0004599
+. //             |
+. //      ddipl1 |
+. //          1  |   -.803534   .0069229  -116.07   0.000     -.817103    -.789965
+. //          2  |  -.5547167   .0089135   -62.23   0.000    -.5721873   -.5372461
+. //          3  |  -.5825761   .0065391   -89.09   0.000    -.5953928   -.5697593
+. //          4  |  -.4155193   .0074172   -56.02   0.000    -.4300572   -.4009815
+. //          5  |  -.2223124   .0075681   -29.37   0.000     -.237146   -.2074789
+. //          6  |          0  (omitted)
+. //             |
+. //       _cons |   8.747749   .0273879   319.40   0.000     8.694068    8.801429
+. //------------------------------------------------------------------------------
+. 
+. test i2.ddipl1 == i3.ddipl1
+
+{p 0 7}{space 1}{text:( 1)}{space 1} {res}2.ddipl1 - 3.ddipl1 = 0{p_end}
+
+{txt}       F(  1, 52590) ={res}   12.81
+{txt}{col 13}Prob > F ={res}    0.0003
+{txt}
+{com}. 
+. // We obtain
+. 
+. // ( 1)  2.ddipl1 - 3.ddipl1 = 0
+. //
+. //       F(  1, 52590) =   12.81
+. //            Prob > F =    0.0003
+. 
+. // With this result, we can reject the null hypothesis that the effect of
+. // level 2 and level 3 schooling is equal.
+. 
+. // Question 9
+. 
+. constraint define 1 i2.ddipl1 == i3.ddipl1
+{txt}
+{com}. constraint dir
+{txt}     1:  {res}i2.ddipl1 == i3.ddipl1
+{txt}
+{com}. 
+. cnsreg log_wages s agd age_sq ibn.ddipl1, c(1)
+{txt}note: {bf:6.ddipl1} omitted because of collinearity.
+{res}
+{txt}{col 1}Constrained linear regression{col 56}{lalign 13:Number of obs}{col 69} = {res}{ralign 7:52,599}
+{txt}{col 56}{lalign 13:F({res:7}, {res:52591})}{col 69} = {res}{ralign 7:3833.50}
+{txt}{col 56}{lalign 13:Prob > F}{col 69} = {res}{ralign 7:0.0000}
+{txt}{col 56}{lalign 13:Root MSE}{col 69} = {res}{ralign 7:0.4342}
+
+{p 0 7}{space 1}{text:( 1)}{space 1} 2.ddipl1 - 3.ddipl1 = 0{p_end}
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}   log_wages{col 14}{c |} Coefficient{col 26}  Std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 11}s {c |}{col 14}{res}{space 2}-.3582423{col 26}{space 2} .0038204{col 37}{space 1}  -93.77{col 46}{space 3}0.000{col 54}{space 4}-.3657302{col 67}{space 3}-.3507543
+{txt}{space 9}agd {c |}{col 14}{res}{space 2} .0520977{col 26}{space 2} .0013642{col 37}{space 1}   38.19{col 46}{space 3}0.000{col 54}{space 4} .0494238{col 67}{space 3} .0547715
+{txt}{space 6}age_sq {c |}{col 14}{res}{space 2}-.0004918{col 26}{space 2} .0000168{col 37}{space 1}  -29.20{col 46}{space 3}0.000{col 54}{space 4}-.0005248{col 67}{space 3}-.0004588
+{txt}{space 12} {c |}
+{space 6}ddipl1 {c |}
+{space 10}1  {c |}{col 14}{res}{space 2}-.8035912{col 26}{space 2} .0069237{col 37}{space 1} -116.06{col 46}{space 3}0.000{col 54}{space 4}-.8171617{col 67}{space 3}-.7900207
+{txt}{space 10}2  {c |}{col 14}{res}{space 2}-.5770788{col 26}{space 2} .0063568{col 37}{space 1}  -90.78{col 46}{space 3}0.000{col 54}{space 4}-.5895382{col 67}{space 3}-.5646194
+{txt}{space 10}3  {c |}{col 14}{res}{space 2}-.5770788{col 26}{space 2} .0063568{col 37}{space 1}  -90.78{col 46}{space 3}0.000{col 54}{space 4}-.5895382{col 67}{space 3}-.5646194
+{txt}{space 10}4  {c |}{col 14}{res}{space 2}-.4155048{col 26}{space 2} .0074181{col 37}{space 1}  -56.01{col 46}{space 3}0.000{col 54}{space 4}-.4300443{col 67}{space 3}-.4009653
+{txt}{space 10}5  {c |}{col 14}{res}{space 2}-.2223334{col 26}{space 2} .0075689{col 37}{space 1}  -29.37{col 46}{space 3}0.000{col 54}{space 4}-.2371686{col 67}{space 3}-.2074982
+{txt}{space 10}6  {c |}{col 14}{res}{space 2}        0{col 26}{txt}  (omitted)
+{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 8.747426{col 26}{space 2} .0273908{col 37}{space 1}  319.36{col 46}{space 3}0.000{col 54}{space 4}  8.69374{col 67}{space 3} 8.801112
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. 
+. //note: 6.ddipl1 omitted because of collinearity.
+. 
+. //Constrained linear regression                          Number of obs =  52,599
+. //                                                       F(7, 52591)   = 3833.50
+. //                                                       Prob > F      =  0.0000
+. //                                                       Root MSE      =  0.4342
+. //
+. // ( 1)  2.ddipl1 - 3.ddipl1 = 0
+. //------------------------------------------------------------------------------
+. //   log_wages | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+. //-------------+----------------------------------------------------------------
+. //           s |  -.3582423   .0038204   -93.77   0.000    -.3657302   -.3507543
+. //         agd |   .0520977   .0013642    38.19   0.000     .0494238    .0547715
+. //      age_sq |  -.0004918   .0000168   -29.20   0.000    -.0005248   -.0004588
+. //             |
+. //      ddipl1 |
+. //          1  |  -.8035912   .0069237  -116.06   0.000    -.8171617   -.7900207
+. //          2  |  -.5770788   .0063568   -90.78   0.000    -.5895382   -.5646194
+. //          3  |  -.5770788   .0063568   -90.78   0.000    -.5895382   -.5646194
+. //          4  |  -.4155048   .0074181   -56.01   0.000    -.4300443   -.4009653
+. //          5  |  -.2223334   .0075689   -29.37   0.000    -.2371686   -.2074982
+. //          6  |          0  (omitted)
+. //             |
+. //       _cons |   8.747426   .0273908   319.36   0.000      8.69374    8.801112
+. //------------------------------------------------------------------------------
+. 
+. 
+. // Question 10
+. 
+. regress log_wages s agd age_sq
+
+{txt}      Source {c |}       SS           df       MS      Number of obs   ={res}    52,601
+{txt}{hline 13}{c +}{hline 34}   F(3, 52597)     = {res}  2498.31
+{txt}       Model {c |} {res} 1868.00215         3  622.667385   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res} 13109.0279    52,597  .249235278   {txt}R-squared       ={res}    0.1247
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.1247
+{txt}       Total {c |} {res} 14977.0301    52,600  .284734412   {txt}Root MSE        =   {res} .49923
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}   log_wages{col 14}{c |} Coefficient{col 26}  Std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 11}s {c |}{col 14}{res}{space 2}-.3181829{col 26}{space 2} .0043607{col 37}{space 1}  -72.97{col 46}{space 3}0.000{col 54}{space 4}  -.32673{col 67}{space 3}-.3096359
+{txt}{space 9}agd {c |}{col 14}{res}{space 2} .0512955{col 26}{space 2} .0015644{col 37}{space 1}   32.79{col 46}{space 3}0.000{col 54}{space 4} .0482293{col 67}{space 3} .0543617
+{txt}{space 6}age_sq {c |}{col 14}{res}{space 2}-.0005346{col 26}{space 2} .0000193{col 37}{space 1}  -27.68{col 46}{space 3}0.000{col 54}{space 4}-.0005725{col 67}{space 3}-.0004968
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 8.306033{col 26}{space 2} .0308211{col 37}{space 1}  269.49{col 46}{space 3}0.000{col 54}{space 4} 8.245623{col 67}{space 3} 8.366442
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. 
+. //      Source |       SS           df       MS      Number of obs   =    52,601
+. //-------------+----------------------------------   F(3, 52597)     =   2498.31
+. //       Model |  1868.00215         3  622.667385   Prob > F        =    0.0000
+. //    Residual |  13109.0279    52,597  .249235278   R-squared       =    0.1247
+. //-------------+----------------------------------   Adj R-squared   =    0.1247
+. //       Total |  14977.0301    52,600  .284734412   Root MSE        =    .49923
+. //
+. //------------------------------------------------------------------------------
+. //   log_wages | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+. //-------------+----------------------------------------------------------------
+. //           s |  -.3181829   .0043607   -72.97   0.000      -.32673   -.3096359
+. //         agd |   .0512955   .0015644    32.79   0.000     .0482293    .0543617
+. //      age_sq |  -.0005346   .0000193   -27.68   0.000    -.0005725   -.0004968
+. //       _cons |   8.306033   .0308211   269.49   0.000     8.245623    8.366442
+. //------------------------------------------------------------------------------
+. 
+. // We note here that the number of observations increases - why? 
+. 
+. // Question 11
+. 
+. ereturn list
+
+{txt}scalars:
+                  e(N) =  {res}52601
+               {txt}e(df_m) =  {res}3
+               {txt}e(df_r) =  {res}52597
+                  {txt}e(F) =  {res}2498.311593559878
+                 {txt}e(r2) =  {res}.1247244710631177
+               {txt}e(rmse) =  {res}.499234692379015
+                {txt}e(mss) =  {res}1868.002154214952
+                {txt}e(rss) =  {res}13109.02792089866
+               {txt}e(r2_a) =  {res}.1246745475582256
+                 {txt}e(ll) =  {res}-38094.77729276339
+               {txt}e(ll_0) =  {res}-41598.4392180729
+               {txt}e(rank) =  {res}4
+
+{txt}macros:
+            e(cmdline) : "{res}regress log_wages s agd age_sq{txt}"
+              e(title) : "{res}Linear regression{txt}"
+          e(marginsok) : "{res}XB default{txt}"
+                e(vce) : "{res}ols{txt}"
+             e(depvar) : "{res}log_wages{txt}"
+                e(cmd) : "{res}regress{txt}"
+         e(properties) : "{res}b V{txt}"
+            e(predict) : "{res}regres_p{txt}"
+              e(model) : "{res}ols{txt}"
+          e(estat_cmd) : "{res}regress_estat{txt}"
+
+matrices:
+                  e(b) : {res} 1 x 4
+                  {txt}e(V) : {res} 4 x 4
+               {txt}e(beta) : {res} 1 x 3
+
+{txt}functions:
+             e(sample)   
+
+{com}. global SSR_model_2 = e(rss)
+{txt}
+{com}. display $SSR_model_2
+{res}13109.028
+{txt}
+{com}. 
+. // ... yields 13109.028.
+. 
+. //Question 12
+. 
+. regress log_wages s agd age_sq ddipl1
+
+{txt}      Source {c |}       SS           df       MS      Number of obs   ={res}    52,599
+{txt}{hline 13}{c +}{hline 34}   F(4, 52594)     = {res}  6397.96
+{txt}       Model {c |} {res}  4901.1115         4  1225.27787   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res} 10072.3193    52,594  .191510806   {txt}R-squared       ={res}    0.3273
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.3273
+{txt}       Total {c |} {res} 14973.4308    52,598   .28467681   {txt}Root MSE        =   {res} .43762
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}   log_wages{col 14}{c |} Coefficient{col 26}  Std. err.{col 38}      t{col 46}   P>|t|{col 54}     [95% con{col 67}f. interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 11}s {c |}{col 14}{res}{space 2} -.352907{col 26}{space 2} .0038325{col 37}{space 1}  -92.08{col 46}{space 3}0.000{col 54}{space 4}-.3604187{col 67}{space 3}-.3453952
+{txt}{space 9}agd {c |}{col 14}{res}{space 2} .0518277{col 26}{space 2} .0013716{col 37}{space 1}   37.79{col 46}{space 3}0.000{col 54}{space 4} .0491393{col 67}{space 3} .0545161
+{txt}{space 6}age_sq {c |}{col 14}{res}{space 2}-.0004834{col 26}{space 2} .0000169{col 37}{space 1}  -28.54{col 46}{space 3}0.000{col 54}{space 4}-.0005166{col 67}{space 3}-.0004502
+{txt}{space 6}ddipl1 {c |}{col 14}{res}{space 2} .1514887{col 26}{space 2} .0012035{col 37}{space 1}  125.87{col 46}{space 3}0.000{col 54}{space 4} .1491298{col 67}{space 3} .1538475
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 7.755334{col 26}{space 2} .0273793{col 37}{space 1}  283.26{col 46}{space 3}0.000{col 54}{space 4}  7.70167{col 67}{space 3} 7.808997
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. test ddipl1
+
+{p 0 7}{space 1}{text:( 1)}{space 1} {res}ddipl1 = 0{p_end}
+
+{txt}       F(  1, 52594) ={res}15843.80
+{txt}{col 13}Prob > F ={res}    0.0000
+{txt}
+{com}. 
+. // ... yields 
+. 
+. // ( 1)  ddipl1 = 0
+. //
+. //      F(  1, 52594) =15843.80
+. //            Prob > F =    0.0000
+. 
+. gen F_stat_global = (($SSR_model_2 - $SSR) ) / ($SSR / ($N - $K_plus_1 )), 
+{txt}
+{com}. 
+. . display F_stat_global
+{res}15856.591
+{txt}
+{com}. 
+. // We obtain: 15856.591 comapred to 15843.80 previously.
+. 
+. // Question 13
+. 
+. display invF(4, $N - 4, 0.05)
+{res}.17767858
+{txt}
+{com}. 
+. // The F-statistic is much larger than our p-value, we can thus reject the null
+. // that education has no effect.
+. 
+. // Question 14
+. 
+. // Note: 1 = male, 2 = female
+. 
+. test (i5.ddipl1 + i2.s = i3.ddipl1 + i1.s)
+{err}regressor I5.ddipl1 not found
+{txt}{search r(111), local:r(111);}
+
+end of do-file
+
+{search r(111), local:r(111);}
+
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}/Users/lionelchambon/Desktop/LIONEL/LIONEL_edu/MASTER/M1/Cours/Econometrics_II/Problem Sets/Problem Set 3/PS-3-STATA_log.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res}28 Feb 2024, 14:21:36
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
